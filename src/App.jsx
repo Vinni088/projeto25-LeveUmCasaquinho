@@ -1,10 +1,30 @@
-import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import reactLogo from './assets/react.svg';
+import viteLogo from '/vite.svg';
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import './App.css';
 
 function App() {
   const [count, setCount] = useState(0)
+  const [req, setReq] = useState('')
+  const [url_mock, setUrl_mock] = useState('https://jsonplaceholder.typicode.com/photos')
+  
+  useEffect(() => {
+    axios.get(url_mock)
+      .then(res => {
+        console.log(res.data)
+        setReq(res.data)
+      })
+      .catch(err => {
+        Swal.fire({
+          title: 'Erro!',
+          text: 'Houve um problema ao obter os dados da página :(',
+          icon: 'error',
+          confirmButtonText: 'Cool'
+        })
+      })
+  }, [url_mock])
 
   return (
     <>
@@ -16,18 +36,15 @@ function App() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+      <h1>Página em obras:</h1>
+      <div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <ul>
+        {
+          req.length > 0 ?
+            req.map(foto => { return(<li key={foto.id}>{foto.title} </li>) }) : "notOK"
+        }
+      </ul>
     </>
   )
 }
