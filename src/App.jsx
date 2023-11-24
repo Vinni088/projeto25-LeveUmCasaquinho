@@ -180,7 +180,7 @@ const LogoDiv = styled.div`
   }
   p {
     font-family: 'Poppins', 'sans-serif';
-    font-size: 4vmin;
+    font-size: 3.6vmin;
     font-weight: 700;
     text-align: left;
     color: #222222;
@@ -209,8 +209,6 @@ const InputBusca = styled.input`
   border: 0px solid lightgray;
   font-size: 22px;
   font-weight: 500;
-  line-height: 24px;
-  letter-spacing: 0em;
   &:focus {
     outline: none;
   }
@@ -249,7 +247,7 @@ const DataSummary = styled.div`
     color: #222222;
   }
   h2 {
-    padding-top: 100px;
+    padding-top: 17.5vh;
     font-family: 'Poppins';
     font-size: 1%.5;
     font-weight: 300;
