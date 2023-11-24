@@ -9,18 +9,36 @@ import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import axios from 'axios';
 
+function mapSummaryStatus(status) {
+  const mapeamento = {
+    'Clear': { descricao: 'Céu aberto', cor: 'orange' },
+    'Clouds': { descricao: 'Nublado', cor: 'grey' },
+    'Rain': { descricao: 'Chovendo', cor: 'blue' },
+    'Snow': { descricao: 'Nevando', cor: 'light-grey' },
+    'Thunderstorm': { descricao: 'Tempestade', cor: 'purple' },
+    'Drizzle': { descricao: 'Chuviscando', cor: 'light-blue' },
+    'Mist': { descricao: 'Neblina', cor: 'light-grey' },
+  };
+
+  if (mapeamento[status]) {
+    return mapeamento[status];
+  } else {
+    return { descricao: 'Clima desconhecido', cor: 'black' };
+  }
+}
+
 function App() {
   const [req, setReq] = useState('');
-  const [data, setData] = useState({})
-  const [inputBusca, setInputBusca] = useState('')
+  const [data, setData] = useState({});
+  const [inputBusca, setInputBusca] = useState('');
+  const [unidadeTemp, setUnidadeTemp] = useState('C')
 
   useEffect(() => {
     console.log(dadosMock);
-    console.log(imagens);
     setData(dadosMock);
   }, [])
 
-  const handleKeyDown = (e) => {
+  const handleSubmit = (e) => {
     if (e.key === 'Enter') {
       Swal.fire({
         title: "Processando",
@@ -28,6 +46,40 @@ function App() {
       });
     }
   };
+
+  const handleTemperature = (temperatura) => {
+    if (unidadeTemp === 'C') {
+      let temperatureCelsius = (temperatura - 273.15);
+      return (temperatureCelsius.toFixed(1) + " °C")
+    } else if (unidadeTemp === 'F') {
+      let temperatureFahrenheit = (9 / 5) * (temperatureKelvin - 273.15) + 32;
+      return temperatureFahrenheit.toFixed(1) + " °F";
+    }
+  }
+
+  function formatarData(timestamp) {
+    if (typeof timestamp !== 'number') {
+      throw new Error('O timestamp deve ser um número.');
+    }
+    const data = new Date(timestamp * 1000);
+
+    const diasDaSemana = [
+      'Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'
+    ];
+
+    const dia = data.getDate();
+    const mes = data.getMonth() + 1;
+    const ano = data.getFullYear();
+    const diaDaSemana = diasDaSemana[data.getDay()];
+
+    const dataFormatada = `${dia}/${mes}/${ano}`;
+
+    const horaFormatada = `${('0' + data.getHours()).slice(-2)}:${('0' + data.getMinutes()).slice(-2)}`;
+    const equivalente = `${diaDaSemana}, ${horaFormatada}`;
+
+    return { data: dataFormatada, equivalente };
+  }
+
   return (
     <Body>
       <SideMenu>
@@ -46,17 +98,37 @@ function App() {
             src={lupa}
             alt='Realize sua busca!'
             title='Realize sua busca'
-            onClick={() => handleKeyDown({ key: 'Enter' })}
+            onClick={() => handleSubmit({ key: 'Enter' })}
           />
           <InputBusca
             placeholder="Procure por uma cidade"
             type="text"
             value={inputBusca}
             onChange={(e) => setInputBusca(e.target.value)}
-            onKeyUp={handleKeyDown}
+            onKeyUp={handleSubmit}
           />
         </DivBusca>
-
+        <DataSummary>
+          <div>
+            {/* Imagem clima */}
+            <img
+              src={imagens[dadosMock.weather[0].icon]}
+              alt=""
+            />
+            <p> {/* Temperatura */}
+              {handleTemperature(dadosMock.main.temp)}
+            </p>
+          </div>
+          <p>
+            {mapSummaryStatus(dadosMock.weather[0].main).descricao}
+          </p>
+          <p>{/* Data: dd/mm/yy */}
+            {formatarData(dadosMock.dt).data}
+          </p>
+          <p>{/* Data: dia da semana + horário */}
+            {formatarData(dadosMock.dt).equivalente}
+          </p>
+        </DataSummary>
       </SideMenu>
       <Dashboard>
         <div>
@@ -67,6 +139,7 @@ function App() {
   )
 }
 
+////////////////// Estilos gerais //////////////////
 const Body = styled.div`
   position: relative;
   height: 100vh;
@@ -76,6 +149,7 @@ const Body = styled.div`
   align-items: center;
   background-color: #D8D8D8;
 `
+////////////////// Estilos Barra Lateral //////////////////
 const SideMenu = styled.div`
   height: 100vh;
   width: 35vw;
@@ -87,7 +161,6 @@ const SideMenu = styled.div`
   align-items: center;
   background-color: white;
 `
-
 const LogoDiv = styled.div`
   padding: 4.2vmin;
   height: 120px;
@@ -109,7 +182,6 @@ const LogoDiv = styled.div`
   }
 `
 const DivBusca = styled.div`
-  border: 1px red solid;
   position: relative;
   padding: 4.2vmin;
   width: 100%;
@@ -138,8 +210,16 @@ const InputBusca = styled.input`
     outline: none;
   }
 `
+const DataSummary = styled.div`
+  div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: ${mapSummaryStatus(dadosMock.weather[0].main).cor};
+  }
+`
 
-
+////////////////// Estilos Dashboard //////////////////
 const Dashboard = styled.div`
   height: 100vh;
   width: 65vw;
