@@ -1,10 +1,12 @@
 import dadosMock from './assets/sampleWeather.json';
 import imagens from './assets/images.index.js';
 import { useState, useEffect } from 'react';
-import casaco from './assets/casaco.png'
+import 'sweetalert2/src/sweetalert2.scss';
+import casaco from './assets/casaco.png';
 import styled from 'styled-components';
-import lupa from './assets/lupa.png'
+import lupa from './assets/lupa.png';
 import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 import axios from 'axios';
 
 function App() {
@@ -20,7 +22,10 @@ function App() {
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      console.log('Tecla Enter pressionada');
+      Swal.fire({
+        title: "Processando",
+        text: "Carregando sua requisição...",
+      });
     }
   };
   return (
@@ -37,18 +42,18 @@ function App() {
           </p>
         </LogoDiv>
         <DivBusca>
-          <img 
-            src={lupa} 
-            alt='Realize sua busca!' 
-            title='Realize sua busca' 
-            onClick={() => handleKeyDown({key: 'Enter'})}
+          <img
+            src={lupa}
+            alt='Realize sua busca!'
+            title='Realize sua busca'
+            onClick={() => handleKeyDown({ key: 'Enter' })}
           />
           <InputBusca
             placeholder="Procure por uma cidade"
             type="text"
             value={inputBusca}
             onChange={(e) => setInputBusca(e.target.value)}
-            onKeyDown={handleKeyDown}
+            onKeyUp={handleKeyDown}
           />
         </DivBusca>
 
