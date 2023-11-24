@@ -38,7 +38,7 @@ function App() {
     setData(dadosMock);
   }, [])
 
-  const handleSubmit = (e) => {
+  function handleSubmit(e) {
     if (e.key === 'Enter') {
       Swal.fire({
         title: "Processando",
@@ -47,7 +47,7 @@ function App() {
     }
   };
 
-  const handleTemperature = (temperatura) => {
+  function handleTemperature(temperatura) {
     if (unidadeTemp === 'C') {
       let temperatureCelsius = (temperatura - 273.15);
       return (temperatureCelsius.toFixed(1) + " °C")
@@ -119,15 +119,20 @@ function App() {
               {handleTemperature(dadosMock.main.temp)}
             </p>
           </div>
-          <p>
+          <h1>
             {mapSummaryStatus(dadosMock.weather[0].main).descricao}
-          </p>
+          </h1>
+
           <p>{/* Data: dd/mm/yy */}
             {formatarData(dadosMock.dt).data}
           </p>
           <p>{/* Data: dia da semana + horário */}
             {formatarData(dadosMock.dt).equivalente}
           </p>
+
+          <h2>
+            Todos os direitos reservados. 2023.
+          </h2>
         </DataSummary>
       </SideMenu>
       <Dashboard>
@@ -211,11 +216,44 @@ const InputBusca = styled.input`
   }
 `
 const DataSummary = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
   div {
     display: flex;
     justify-content: center;
     align-items: center;
+    font-family: 'Poppins';
+    font-size: 4.2vw;
+    font-weight: 300;
+    line-height: 48px;
     color: ${mapSummaryStatus(dadosMock.weather[0].main).cor};
+  }
+  h1 {
+    width: 100%;
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px lightgray solid;
+    font-family: 'Poppins';
+    font-size: 3.0vw;
+    font-weight: 400;
+    color: #222222;
+  }
+  p {
+    width: 100%;
+    font-family: 'Poppins';
+    text-align: center;
+    font-size: 2.5;
+    font-weight: 500;
+    color: #222222;
+  }
+  h2 {
+    padding-top: 100px;
+    font-family: 'Poppins';
+    font-size: 1%.5;
+    font-weight: 300;
+    text-align: center;
   }
 `
 
