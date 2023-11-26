@@ -1,4 +1,7 @@
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Brush, ResponsiveContainer } from 'recharts';
+import forecastMock from './assets/sampleForecast.json';
 import dadosMock from './assets/sampleWeather.json';
+import Chart from './components/forecastGraph.jsx';
 import imagens from './assets/images.index.js';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import { useState, useEffect } from 'react';
@@ -35,8 +38,14 @@ function App() {
   const [unidadeTemp, setUnidadeTemp] = useState('C')
   const [menuSelect, setMenuSelect] = useState('hoje')
 
+  const chartData = forecastMock.list.map(item => ({
+    dt: new Date(item.dt * 1000), // Convertendo timestamp para uma data JS
+    temp: handleTemperatureChart(item.main.temp),
+  }));
+
   useEffect(() => {
     //console.log(dadosMock);
+    //console.log(forecastMock)
     setData(dadosMock);
   }, [])
 
@@ -56,6 +65,16 @@ function App() {
     } else if (unidadeTemp === 'F') {
       let temperatureFahrenheit = (9 / 5) * (temperatura - 273.15) + 32;
       return temperatureFahrenheit.toFixed(1) + " °F";
+    }
+  }
+
+  function handleTemperatureChart(temperatura) {
+    if (unidadeTemp === 'C') {
+      let temperatureCelsius = (temperatura - 273.15);
+      return (temperatureCelsius.toFixed(2))
+    } else if (unidadeTemp === 'F') {
+      let temperatureFahrenheit = (9 / 5) * (temperatura - 273.15) + 32;
+      return temperatureFahrenheit.toFixed(2);
     }
   }
 
@@ -106,8 +125,6 @@ function App() {
     }
   }
 
-  const label = { inputProps: { 'aria-label': 'Switch demo' } };
-
   return (
     <Body>
       <SideMenu>
@@ -118,7 +135,7 @@ function App() {
             title="Logomarca 'Levo um casasquinho' TM "
           />
           <p>
-            Levo um casaquinho?
+            Levo um <br />casaquinho?
           </p>
         </LogoDiv>
         <DivBusca>
@@ -223,7 +240,34 @@ function App() {
           </div>
         </DashboardHoje>
         <DashboardProx style={{ display: menuSelect === 'proxDias' ? 'unset' : 'none' }}>
-          aqui vai ter a parte de próximos dias do dashboard
+          <h1>
+            {dadosMock.name}
+          </h1>
+          <div id='coords'>
+            <h3>
+              Lat: {dadosMock.coord.lat}
+            </h3>
+            <h3>
+              Long: {dadosMock.coord.lon}
+            </h3>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={chartData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              style={{ backgroundColor: 'white', borderRadius: '10px' }}
+            >
+              <XAxis
+                dataKey="dt"
+                tickFormatter={(date) => `${date.getDate()}/${date.getMonth() + 1} ${date.getHours()}h`} />
+              <YAxis
+                tickFormatter={(temp) => `${temp}°${unidadeTemp}`}
+              />
+              <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
+              <Tooltip />
+              <Line type="monotone" dataKey="temp" stroke="#8884d8" />
+            </LineChart>
+          </ResponsiveContainer>
         </DashboardProx>
         <p>Dados fornecidos pela <a href="https://openweathermap.org/"> Open Weather API </a> </p>
       </Dashboard>
@@ -450,8 +494,27 @@ const DashboardHoje = styled.div`
 const DashboardProx = styled.div`
   width: 100%;
   height: 100%;
-  border: 1px solid blue;
   padding-left: 2vw;
+  h1 {
+    width: 100%;
+    font-family: 'Poppins';
+    font-size: 15vmin;
+    font-weight: 400;
+    text-align: left;
+  }
+  h3 {
+    font-family: 'Poppins';
+    font-size: 2vmin;
+    font-weight: 300;
+    text-align: left;
+  }
+  #coords {
+    padding: 10px 0px;
+    gap: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
 `
 
 export default App
