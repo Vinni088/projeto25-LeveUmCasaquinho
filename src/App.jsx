@@ -88,6 +88,13 @@ function App() {
     }
 
   }
+  function handleCasaquinho(temp) {
+    if (temp < 290) {
+      return 'Você deve levar um casaquinho!'
+    } else {
+      return 'Não, você não deve levar um casaquinho!'
+    }
+  }
 
   return (
     <Body>
@@ -149,16 +156,62 @@ function App() {
           <p
             onClick={() => { handleMenuChange('hoje') }}
             style={{ color: menuSelect === 'hoje' ? '#222222' : '#C8C8C8' }}
-            disabled={menuSelect === 'hoje' ? false : true}>
+          >
             Hoje
           </p>
           <p
             onClick={() => { handleMenuChange('proxDias') }}
             style={{ color: menuSelect === 'proxDias' ? '#222222' : '#C8C8C8' }}
-            disabled={menuSelect === 'proxDias' ? false : true}>
+          >
             Próximos dias
           </p>
         </DashboardMenu>
+        <DashboardHoje style={{ display: menuSelect === 'hoje' ? 'unset' : 'none' }}>
+          <h1>
+            {dadosMock.name}
+          </h1>
+          <div id='coords'>
+            <h3>
+              Lat: {dadosMock.coord.lat}
+            </h3>
+            <h3>
+              Long: {dadosMock.coord.lon}
+            </h3>
+          </div>
+          <div id='baloons'>
+            <div id='prop'>
+              <p>
+                Mínima: <br />
+              </p>
+              {handleTemperature(dadosMock.main.temp_min)}
+            </div>
+            <div id='prop'>
+              <p>
+                Máxima: <br />
+              </p>
+              {handleTemperature(dadosMock.main.temp_max)}
+            </div>
+            <div id='prop'>
+              <p>
+                Umidade: <br />
+              </p>
+              {dadosMock.main.humidity}%
+            </div>
+            <div id='prop'>
+              <p>
+                Velocidade do vento: <br />
+              </p>
+              {dadosMock.wind.speed} m/s
+            </div>
+            <h4>
+              {handleCasaquinho(dadosMock.main.temp)}
+            </h4>
+          </div>
+        </DashboardHoje>
+        <DashboardProx style={{ display: menuSelect === 'proxDias' ? 'unset' : 'none' }}>
+          aqui vai ter a parte de próximos dias do dashboard
+        </DashboardProx>
+        <p>Dados fornecidos pela <a href="https://openweathermap.org/"> Open Weather API </a> </p>
       </Dashboard>
     </Body>
   )
@@ -287,15 +340,26 @@ const Dashboard = styled.div`
   width: 65vw;
   display: flex;
   flex-direction: column;
+  gap: 40px;
   justify-content: flex-start;
   align-items: center;
   padding: 6vh 2vw;
+  p {
+    width: 100%;
+    text-align: left;
+    font-family: 'Poppins';
+    font-weight: 400;
+    a {
+      text-decoration: none;
+      color: #96A7F2;
+    }
+  }
 `
 const DashboardMenu = styled.div`
   padding-left: 2vw;
   width: 100%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   gap: 30px;
   p {
@@ -303,9 +367,72 @@ const DashboardMenu = styled.div`
     font-family: 'Poppins';
     font-size: 5vmin;
     font-weight: 400;
-    text-align: center;
+    text-align: left;
   }
 `
-
+const DashboardHoje = styled.div`
+  width: 100%;
+  height: 100%;
+  padding-left: 2vw;
+  h1 {
+    width: 100%;
+    font-family: 'Poppins';
+    font-size: 15vmin;
+    font-weight: 400;
+    text-align: left;
+  }
+  h3 {
+    font-family: 'Poppins';
+    font-size: 2vmin;
+    font-weight: 300;
+    text-align: left;
+  }
+  h4 {
+    font-family: 'Poppins';
+    font-size: 2vw;
+    font-style: italic;
+    color: gray;
+  }
+  #coords {
+    padding: 10px 0px;
+    gap: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  #baloons {
+    width: 100%;
+    padding-top: 20px;
+    gap: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+  #prop {
+    width: 25vw;
+    height: 15vh;
+    border-radius: 32px;
+    padding: 5%;
+    background-color: #4D4494;
+    gap: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    font-family: 'Poppins';
+    font-size: 2vw;
+    font-weight: 700;
+    color: white;
+    p {
+      font-size: 1vw;
+    }
+  }
+`
+const DashboardProx = styled.div`
+  width: 100%;
+  height: 100%;
+  border: 1px solid blue;
+  padding-left: 2vw;
+`
 
 export default App
