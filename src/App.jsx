@@ -12,12 +12,12 @@ import axios from 'axios';
 function mapSummaryStatus(status) {
   const mapeamento = {
     'Clear': { descricao: 'Céu aberto', cor: 'orange' },
-    'Clouds': { descricao: 'Nublado', cor: 'grey' },
+    'Clouds': { descricao: 'Nublado', cor: 'gray' },
     'Rain': { descricao: 'Chovendo', cor: 'blue' },
-    'Snow': { descricao: 'Nevando', cor: 'light-grey' },
+    'Snow': { descricao: 'Nevando', cor: 'lightgray' },
     'Thunderstorm': { descricao: 'Tempestade', cor: 'purple' },
-    'Drizzle': { descricao: 'Chuviscando', cor: 'light-blue' },
-    'Mist': { descricao: 'Neblina', cor: 'light-grey' },
+    'Drizzle': { descricao: 'Chuviscando', cor: 'lightblue' },
+    'Mist': { descricao: 'Neblina', cor: 'lightgray' },
   };
 
   if (mapeamento[status]) {
@@ -32,9 +32,10 @@ function App() {
   const [data, setData] = useState({});
   const [inputBusca, setInputBusca] = useState('');
   const [unidadeTemp, setUnidadeTemp] = useState('C')
+  const [menuSelect, setMenuSelect] = useState('hoje')
 
   useEffect(() => {
-    console.log(dadosMock);
+    //console.log(dadosMock);
     setData(dadosMock);
   }, [])
 
@@ -57,7 +58,7 @@ function App() {
     }
   }
 
-  function formatarData(timestamp) {
+  function handleData(timestamp) {
     if (typeof timestamp !== 'number') {
       throw new Error('O timestamp deve ser um número.');
     }
@@ -78,6 +79,14 @@ function App() {
     const equivalente = `${diaDaSemana}, ${horaFormatada}`;
 
     return { data: dataFormatada, equivalente };
+  }
+
+  function handleMenuChange(string) {
+    if (menuSelect !== string) {
+      setMenuSelect(string)
+      console.log(string)
+    }
+
   }
 
   return (
@@ -124,10 +133,10 @@ function App() {
           </h1>
 
           <p>{/* Data: dd/mm/yy */}
-            {formatarData(dadosMock.dt).data}
+            {handleData(dadosMock.dt).data}
           </p>
           <p>{/* Data: dia da semana + horário */}
-            {formatarData(dadosMock.dt).equivalente}
+            {handleData(dadosMock.dt).equivalente}
           </p>
 
           <h2>
@@ -136,9 +145,20 @@ function App() {
         </DataSummary>
       </SideMenu>
       <Dashboard>
-        <div>
-          aqui ficará o dashboard
-        </div>
+        <DashboardMenu>
+          <p
+            onClick={() => { handleMenuChange('hoje') }}
+            style={{ color: menuSelect === 'hoje' ? '#222222' : '#C8C8C8' }}
+            disabled={menuSelect === 'hoje' ? false : true}>
+            Hoje
+          </p>
+          <p
+            onClick={() => { handleMenuChange('proxDias') }}
+            style={{ color: menuSelect === 'proxDias' ? '#222222' : '#C8C8C8' }}
+            disabled={menuSelect === 'proxDias' ? false : true}>
+            Próximos dias
+          </p>
+        </DashboardMenu>
       </Dashboard>
     </Body>
   )
@@ -146,6 +166,9 @@ function App() {
 
 ////////////////// Estilos gerais //////////////////
 const Body = styled.div`
+  * {
+    transition: all 0.5s ease;
+  }
   position: relative;
   height: 100vh;
   width: 100vw;
@@ -226,7 +249,9 @@ const DataSummary = styled.div`
     font-size: 4.2vw;
     font-weight: 300;
     line-height: 48px;
-    color: ${mapSummaryStatus(dadosMock.weather[0].main).cor};
+    p {
+      color: ${(mapSummaryStatus(dadosMock.weather[0].main)).cor};
+    }
   }
   h1 {
     width: 100%;
@@ -257,11 +282,30 @@ const DataSummary = styled.div`
 
 ////////////////// Estilos Dashboard //////////////////
 const Dashboard = styled.div`
+  background-color: #D8D8D8;
   height: 100vh;
   width: 65vw;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
+  padding: 6vh 2vw;
 `
+const DashboardMenu = styled.div`
+  padding-left: 2vw;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 30px;
+  p {
+    cursor: pointer;
+    font-family: 'Poppins';
+    font-size: 5vmin;
+    font-weight: 400;
+    text-align: center;
+  }
+`
+
+
 export default App
