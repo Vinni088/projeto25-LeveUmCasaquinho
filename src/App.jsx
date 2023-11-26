@@ -1,12 +1,13 @@
 import dadosMock from './assets/sampleWeather.json';
 import imagens from './assets/images.index.js';
+import 'sweetalert2/dist/sweetalert2.min.css';
 import { useState, useEffect } from 'react';
 import 'sweetalert2/src/sweetalert2.scss';
+import Switch from '@mui/material/Switch';
 import casaco from './assets/casaco.png';
 import styled from 'styled-components';
 import lupa from './assets/lupa.png';
 import Swal from 'sweetalert2';
-import 'sweetalert2/dist/sweetalert2.min.css';
 import axios from 'axios';
 
 function mapSummaryStatus(status) {
@@ -53,8 +54,16 @@ function App() {
       let temperatureCelsius = (temperatura - 273.15);
       return (temperatureCelsius.toFixed(1) + " °C")
     } else if (unidadeTemp === 'F') {
-      let temperatureFahrenheit = (9 / 5) * (temperatureKelvin - 273.15) + 32;
+      let temperatureFahrenheit = (9 / 5) * (temperatura - 273.15) + 32;
       return temperatureFahrenheit.toFixed(1) + " °F";
+    }
+  }
+
+  function handleChangeTempUnit() {
+    if (unidadeTemp === 'C') {
+      setUnidadeTemp('F')
+    } else {
+      setUnidadeTemp('C')
     }
   }
 
@@ -88,6 +97,7 @@ function App() {
     }
 
   }
+
   function handleCasaquinho(temp) {
     if (temp < 290) {
       return 'Você deve levar um casaquinho!'
@@ -95,6 +105,8 @@ function App() {
       return 'Não, você não deve levar um casaquinho!'
     }
   }
+
+  const label = { inputProps: { 'aria-label': 'Switch demo' } };
 
   return (
     <Body>
@@ -145,7 +157,9 @@ function App() {
           <p>{/* Data: dia da semana + horário */}
             {handleData(dadosMock.dt).equivalente}
           </p>
-
+          <div id='switch' style={{ display: "flex", justifyContent: 'center' }}>
+            <Switch onClick={handleChangeTempUnit} /> °F
+          </div>
           <h2>
             Todos os direitos reservados. 2023.
           </h2>
@@ -325,11 +339,16 @@ const DataSummary = styled.div`
     color: #222222;
   }
   h2 {
-    padding-top: 17.5vh;
+    padding-top: 8.5vh;
     font-family: 'Poppins';
-    font-size: 1%.5;
+    font-size: 1.5;
     font-weight: 300;
     text-align: center;
+  }
+  #switch {
+    font-family: 'Poppins';
+    font-size: 2vmin;
+    font-weight: 400;
   }
 `
 
