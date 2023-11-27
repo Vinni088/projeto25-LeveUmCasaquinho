@@ -1,7 +1,6 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Brush, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import forecastMock from './assets/sampleForecast.json';
 import dadosMock from './assets/sampleWeather.json';
-import Chart from './components/forecastGraph.jsx';
 import imagens from './assets/images.index.js';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import { useState, useEffect } from 'react';
@@ -13,48 +12,74 @@ import lupa from './assets/lupa.png';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
-function mapSummaryStatus(status) {
-  const mapeamento = {
-    'Clear': { descricao: 'Céu aberto', cor: 'orange' },
-    'Clouds': { descricao: 'Nublado', cor: 'gray' },
-    'Rain': { descricao: 'Chovendo', cor: 'blue' },
-    'Snow': { descricao: 'Nevando', cor: 'lightgray' },
-    'Thunderstorm': { descricao: 'Tempestade', cor: 'purple' },
-    'Drizzle': { descricao: 'Chuviscando', cor: 'lightblue' },
-    'Mist': { descricao: 'Neblina', cor: 'lightgray' },
-  };
-
-  if (mapeamento[status]) {
-    return mapeamento[status];
-  } else {
-    return { descricao: 'Clima desconhecido', cor: 'black' };
-  }
-}
-
 function App() {
-  const [req, setReq] = useState('');
-  const [data, setData] = useState({});
+  const [dataHoje, setDataHoje] = useState(dadosMock);
+  const [dataPrevis, setDataPrevis] = useState(forecastMock);
   const [inputBusca, setInputBusca] = useState('');
   const [unidadeTemp, setUnidadeTemp] = useState('C')
   const [menuSelect, setMenuSelect] = useState('hoje')
 
-  const chartData = forecastMock.list.map(item => ({
+  const urlBuscaCidades = import.meta.env.VITE_URL_GEO;
+  const urlBuscaHoje = import.meta.env.VITE_URL_CURRENT_WEATHER;
+  const urlBuscaPrevis = import.meta.env.VITE_URL_FORECAST;
+  const appid = import.meta.env.VITE_X_API_KEY;
+
+  const chartData = dataPrevis.list.map(item => ({
     dt: new Date(item.dt * 1000), // Convertendo timestamp para uma data JS
     temp: handleTemperatureChart(item.main.temp),
   }));
+  const minYValue = Math.min(...dataPrevis.list.map(item => handleTemperatureChart(item.main.temp)));
+  const maxYValue = Math.max(...dataPrevis.list.map(item => handleTemperatureChart(item.main.temp)));
 
   useEffect(() => {
-    //console.log(dadosMock);
-    //console.log(forecastMock)
-    setData(dadosMock);
+    setDataHoje(dadosMock);
+    setDataPrevis(forecastMock)
   }, [])
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     if (e.key === 'Enter') {
-      Swal.fire({
-        title: "Processando",
-        text: "Carregando sua requisição...",
-      });
+      console.log(urlBuscaCidades, appid)
+      try {
+        let cidades = (await axios.get(urlBuscaCidades,
+          {
+            params: {
+              q: inputBusca,
+              appid,
+              limit: 5
+            }
+          })).data
+        console.log(cidades)
+
+        const { value } = await Swal.fire({
+          title: 'Estas foram as cinco primeiras cidades identificadas pela sua busca:',
+          input: 'select',
+          inputOptions: Object.fromEntries(cidades.map((opcao, index) => [index, ` ${opcao.name}, ${opcao.state}, ${opcao.country}`])),
+          inputPlaceholder: 'Selecione uma opção',
+          showCancelButton: true,
+          inputValidator: (value) => {
+            if (!value) {
+              return 'Por favor, selecione uma opção';
+            }
+          },
+        });
+        let cidadeEscolhida = cidades[value];
+        const paramentros = {
+          lat: cidadeEscolhida.lat,
+          lon: cidadeEscolhida.lon,
+          appid
+        }
+        let dadosHoje = (await axios.get(urlBuscaHoje, { params: paramentros })).data
+        let dadosPrevis = (await axios.get(urlBuscaPrevis, { params: paramentros })).data
+        setDataHoje(dadosHoje)
+        setDataPrevis(dadosPrevis)
+      } catch (error) {
+        Swal.fire({
+          title: "Opa!",
+          text: "Houve um problema com a fonte de dados externa. Por favor espere um pouco e tente novamente",
+          icon: "error"
+        });
+        console.log(error)
+      }
     }
   };
 
@@ -75,6 +100,40 @@ function App() {
     } else if (unidadeTemp === 'F') {
       let temperatureFahrenheit = (9 / 5) * (temperatura - 273.15) + 32;
       return temperatureFahrenheit.toFixed(2);
+    }
+  }
+
+  function handleDateShow(dataString) {
+    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const meses = [
+      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+    ];
+
+    const data = new Date(dataString);
+    const diaSemana = diasSemana[data.getDay()];
+    const dia = data.getDate();
+    const mes = meses[data.getMonth()];
+    const ano = data.getFullYear();
+
+    return `${diaSemana}, ${dia} ${mes} ${ano}`;
+  }
+
+  function mapSummaryStatus(status) {
+    const mapeamento = {
+      'Clear': { descricao: 'Céu aberto', cor: '#FFA500' },
+      'Clouds': { descricao: 'Nublado', cor: 'gray' },
+      'Rain': { descricao: 'Chovendo', cor: 'blue' },
+      'Snow': { descricao: 'Nevando', cor: 'lightgray' },
+      'Thunderstorm': { descricao: 'Tempestade', cor: 'purple' },
+      'Drizzle': { descricao: 'Chuviscando', cor: 'lightblue' },
+      'Mist': { descricao: 'Neblina', cor: 'lightgray' },
+    };
+
+    if (mapeamento[status]) {
+      return mapeamento[status];
+    } else {
+      return { descricao: 'Clima desconhecido', cor: 'black' };
     }
   }
 
@@ -157,22 +216,22 @@ function App() {
           <div>
             {/* Imagem clima */}
             <img
-              src={imagens[dadosMock.weather[0].icon]}
+              src={imagens[dataHoje.weather[0].icon]}
               alt=""
             />
-            <p> {/* Temperatura */}
-              {handleTemperature(dadosMock.main.temp)}
+            <p style={{ color: (mapSummaryStatus(dataHoje.weather[0].main)).cor }}> {/* Temperatura */}
+              {handleTemperature(dataHoje.main.temp)}
             </p>
           </div>
-          <h1>
-            {mapSummaryStatus(dadosMock.weather[0].main).descricao}
+          <h1 >
+            {mapSummaryStatus(dataHoje.weather[0].main).descricao}
           </h1>
 
           <p>{/* Data: dd/mm/yy */}
-            {handleData(dadosMock.dt).data}
+            {handleData(dataHoje.dt).data}
           </p>
           <p>{/* Data: dia da semana + horário */}
-            {handleData(dadosMock.dt).equivalente}
+            {handleData(dataHoje.dt).equivalente}
           </p>
           <div id='switch' style={{ display: "flex", justifyContent: 'center' }}>
             <Switch onClick={handleChangeTempUnit} /> °F
@@ -199,14 +258,14 @@ function App() {
         </DashboardMenu>
         <DashboardHoje style={{ display: menuSelect === 'hoje' ? 'unset' : 'none' }}>
           <h1>
-            {dadosMock.name}
+            {dataHoje.name}
           </h1>
           <div id='coords'>
             <h3>
-              Lat: {dadosMock.coord.lat}
+              Lat: {dataHoje.coord.lat}
             </h3>
             <h3>
-              Long: {dadosMock.coord.lon}
+              Long: {dataHoje.coord.lon}
             </h3>
           </div>
           <div id='baloons'>
@@ -214,44 +273,44 @@ function App() {
               <p>
                 Mínima: <br />
               </p>
-              {handleTemperature(dadosMock.main.temp_min)}
+              {handleTemperature(dataHoje.main.temp_min)}
             </div>
             <div id='prop'>
               <p>
                 Máxima: <br />
               </p>
-              {handleTemperature(dadosMock.main.temp_max)}
+              {handleTemperature(dataHoje.main.temp_max)}
             </div>
             <div id='prop'>
               <p>
                 Umidade: <br />
               </p>
-              {dadosMock.main.humidity}%
+              {dataHoje.main.humidity}%
             </div>
             <div id='prop'>
               <p>
                 Velocidade do vento: <br />
               </p>
-              {dadosMock.wind.speed} m/s
+              {dataHoje.wind.speed} m/s
             </div>
             <h4>
-              {handleCasaquinho(dadosMock.main.temp)}
+              {handleCasaquinho(dataHoje.main.temp)}
             </h4>
           </div>
         </DashboardHoje>
         <DashboardProx style={{ display: menuSelect === 'proxDias' ? 'unset' : 'none' }}>
           <h1>
-            {dadosMock.name}
+            {dataHoje.name}
           </h1>
           <div id='coords'>
             <h3>
-              Lat: {dadosMock.coord.lat}
+              Lat: {dataHoje.coord.lat}
             </h3>
             <h3>
-              Long: {dadosMock.coord.lon}
+              Long: {dataHoje.coord.lon}
             </h3>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={350}>
             <LineChart
               data={chartData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -262,14 +321,24 @@ function App() {
                 tickFormatter={(date) => `${date.getDate()}/${date.getMonth() + 1} ${date.getHours()}h`} />
               <YAxis
                 tickFormatter={(temp) => `${temp}°${unidadeTemp}`}
+                domain={[Math.round(minYValue) - 2, Math.round(maxYValue) + 2]}
               />
-              <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
-              <Tooltip />
+              <CartesianGrid
+                stroke="#eee"
+                strokeDasharray="5 5"
+              />
+              <Tooltip
+                labelFormatter={(value) => `${handleDateShow(value.toDateString())}`}
+                wrapperStyle={{ backgroundColor: 'lightgray' }}
+                formatter={(temp) => `${temp}°${unidadeTemp}`}
+              />
               <Line type="monotone" dataKey="temp" stroke="#8884d8" />
             </LineChart>
           </ResponsiveContainer>
         </DashboardProx>
-        <p>Dados fornecidos pela <a href="https://openweathermap.org/"> Open Weather API </a> </p>
+        <p>
+          Dados fornecidos pela <a href="https://openweathermap.org/"> Open Weather API </a>
+        </p>
       </Dashboard>
     </Body>
   )
@@ -281,17 +350,31 @@ const Body = styled.div`
     transition: all 0.5s ease;
   }
   position: relative;
-  height: 100vh;
-  width: 100vw;
+  min-height: 100vh;
+  min-width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #D8D8D8;
+  background-color: white;
+
+  // Utilizar em um navegador que suporte o tookit
+  ::-webkit-scrollbar {
+    width: 2px !important;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: white !important;
+    border-radius: 5px !important;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: gray !important;
+  }
 `
 ////////////////// Estilos Barra Lateral //////////////////
 const SideMenu = styled.div`
-  height: 100vh;
-  width: 35vw;
+  min-height: 100vh;
+  min-width: 35vw;
   padding-top: 4vmin;
   gap: 10px;
   display: flex;
@@ -360,9 +443,6 @@ const DataSummary = styled.div`
     font-size: 4.2vw;
     font-weight: 300;
     line-height: 48px;
-    p {
-      color: ${(mapSummaryStatus(dadosMock.weather[0].main)).cor};
-    }
   }
   h1 {
     width: 100%;
@@ -399,8 +479,8 @@ const DataSummary = styled.div`
 ////////////////// Estilos Dashboard //////////////////
 const Dashboard = styled.div`
   background-color: #D8D8D8;
-  height: 100vh;
-  width: 65vw;
+  min-height: 100vh;
+  min-width: 65vw;
   display: flex;
   flex-direction: column;
   gap: 40px;
