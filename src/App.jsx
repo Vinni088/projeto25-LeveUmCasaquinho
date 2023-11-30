@@ -8,26 +8,18 @@ import 'sweetalert2/src/sweetalert2.scss';
 import Switch from '@mui/material/Switch';
 import Logo from './components/logdiv.jsx';
 import styled from 'styled-components';
-import lupa from './assets/lupa.png';
-import Swal from 'sweetalert2';
-import axios from 'axios';
-
 
 import LocationInfo from './components/cityInfo.jsx';
+import DivSearch from './components/divBusca.jsx';
 
 function App() {
   const [DataPresent, setDataPresent] = useState(dadosMock);
   const [DataForecast, setDataForecast] = useState(forecastMock);
-  const [inputBusca, setInputBusca] = useState('');
   const [TempUnit, setTempUnit] = useState('C')
   const [menuSelect, setMenuSelect] = useState('hoje')
 
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
-  const urlGetCities = import.meta.env.VITE_URL_GEO;
-  const urlGetToday = import.meta.env.VITE_URL_CURRENT_WEATHER;
-  const urlGetForecast = import.meta.env.VITE_URL_FORECAST;
-  const appid = import.meta.env.VITE_X_API_KEY;
 
   const chartData = DataForecast.list.map(item => ({
     dt: new Date(item.dt * 1000), // Convertendo timestamp para uma data JS
@@ -41,59 +33,6 @@ function App() {
     setDataForecast(forecastMock)
   }, [])
 
-  async function handleSubmit(e) {
-    if (e.key === 'Enter') {
-      //console.log(urlGetCities, appid)
-      try {
-        let cities = (await axios.get(urlGetCities,
-          {
-            params: {
-              q: inputBusca,
-              appid,
-              limit: 5
-            }
-          })).data
-        if (cities.length === 0) {
-          return (
-            Swal.fire({
-              title: "Opa!",
-              text: "Parece que sua busca não retornou cidades. \n Verifique o seu input e tente novamente",
-            })
-          )
-        }
-
-        const { value } = await Swal.fire({
-          title: 'Estas foram as cinco primeiras cidades identificadas pela sua busca:',
-          input: 'select',
-          inputOptions: Object.fromEntries(cities.map((opcao, index) => [index, ` ${opcao.name}, ${opcao.state}, ${opcao.country}`])),
-          inputPlaceholder: 'Selecione uma opção',
-          showCancelButton: true,
-          inputValidator: (value) => {
-            if (!value) {
-              return 'Por favor, selecione uma opção';
-            }
-          },
-        });
-        let cidadeEscolhida = cities[value];
-        const paramentros = {
-          lat: cidadeEscolhida.lat,
-          lon: cidadeEscolhida.lon,
-          appid
-        }
-        let dadosHoje = (await axios.get(urlGetToday, { params: paramentros })).data
-        let dadosPrevis = (await axios.get(urlGetForecast, { params: paramentros })).data
-        setDataPresent(dadosHoje)
-        setDataForecast(dadosPrevis)
-      } catch (error) {
-        Swal.fire({
-          title: "Opa!",
-          text: "Houve um problema com a fonte de dados externa. Por favor espere um pouco e tente novamente",
-
-        });
-        console.log(error)
-      }
-    }
-  };
 
   function handleTemperature(temperatura) {
     if (TempUnit === 'C') {
@@ -195,23 +134,11 @@ function App() {
   return (
     <Body>
       <SideMenu>
-        <Logo/>
-        <DivBusca>
-          <img
-            src={lupa}
-            alt='Realize sua busca!'
-            title='Realize sua busca'
-            onClick={() => handleSubmit({ key: 'Enter' })}
-          />
-          <InputBusca
-            placeholder="Procure por uma cidade"
-            type="text"
-            autoFocus
-            value={inputBusca}
-            onChange={(e) => setInputBusca(e.target.value)}
-            onKeyUp={handleSubmit}
-          />
-        </DivBusca>
+        <Logo />
+        <DivSearch
+          setDataPresent={setDataPresent}
+          setDataForecast={setDataForecast}
+        />
         <DataSummary>
           <div>
             {/* Imagem clima */}
@@ -236,7 +163,7 @@ function App() {
           <div id='switch' style={{ display: "flex", justifyContent: 'center' }}>
             <Switch onClick={handleChangeTempUnit} /> °F
           </div>
-          <h2 style={{ position: 'fixed', bottom: '20px', left: '4vw'}}>
+          <h2 style={{position: 'absolute', bottom: '20px', left: '4vw'}}>
             Todos os direitos reservados. 2023.
           </h2>
         </DataSummary>
@@ -324,7 +251,7 @@ function App() {
             </LineChart>
           </ResponsiveContainer>
         </DashboardProx>
-        <p>
+        <p style={{position: 'absolute', bottom: '20px', left: '39vw'}}>
           Dados fornecidos pela <a href="https://openweathermap.org/"> Open Weather API </a>
         </p>
       </Dashboard>
@@ -405,34 +332,6 @@ const SideMenu = styled.div`
   justify-content: flex-start;
   align-items: center;
   background-color: white;
-`
-
-const DivBusca = styled.div`
-  position: relative;
-  padding: 4.2vmin;
-  width: 100%;
-  height: 100px;
-  padding: 10px;
-  img { 
-    cursor: pointer;
-    position: absolute;
-    top: 30px;
-    left: 20px;
-  }
-`
-const InputBusca = styled.input`
-  width: 100%;
-  height: 80px;
-  text-align: center;
-  border-radius: 24px;
-  color: #424243;
-  background-color: #EDEDEF;
-  border: 0px solid lightgray;
-  font-size: 22px;
-  font-weight: 500;
-  &:focus {
-    outline: none;
-  }
 `
 const DataSummary = styled.div`
   display: flex;
