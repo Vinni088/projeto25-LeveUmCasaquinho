@@ -121,7 +121,7 @@ const DataSummaryDiv = styled.div`
     padding-top: 8.5vh;
     font-family: 'Poppins';
     font-size: 1.5;
-    font-weight: 300;
+    font-weight: 400;
     text-align: center;
   }
   #switch {

@@ -9,6 +9,7 @@ import styled from 'styled-components';
 import LocationInfo from './components/cityInfo.jsx';
 import DivSearch from './components/divBusca.jsx';
 import DataSummary from './components/dataSummary.jsx';
+import InfoHoje from './components/infoHoje.jsx';
 
 function App() {
   const [DataPresent, setDataPresent] = useState(dadosMock);
@@ -32,15 +33,6 @@ function App() {
   }, [])
 
 
-  function handleTemperature(temperatura) {
-    if (TempUnit === 'C') {
-      let temperatureCelsius = (temperatura - 273.15);
-      return (temperatureCelsius.toFixed(1) + " °C")
-    } else if (TempUnit === 'F') {
-      let temperatureFahrenheit = (9 / 5) * (temperatura - 273.15) + 32;
-      return temperatureFahrenheit.toFixed(1) + " °F";
-    }
-  }
 
   function handleTemperatureChart(temperatura) {
     if (TempUnit === 'C') {
@@ -76,79 +68,48 @@ function App() {
 
   }
 
-  function handleCasaquinho(temp) {
-    if (temp < 290) {
-      return 'Você deve levar um casaquinho!'
-    } else {
-      return 'Não, você não deve levar um casaquinho!'
-    }
-  }
 
   return (
     <Body>
       <SideMenu>
         <Logo />
+
         <DivSearch
           setDataPresent={setDataPresent}
           setDataForecast={setDataForecast}
         />
+
         <DataSummary
           DataPresent={DataPresent}
           setTempUnit={setTempUnit}
           TempUnit={TempUnit}
         />
+
       </SideMenu>
+
       <Dashboard>
         <DashboardMenu>
-          <p
-            onClick={() => { handleMenuChange('hoje') }}
-            style={{ color: menuSelect === 'hoje' ? '#222222' : '#C8C8C8' }}
-          >
+          <p onClick={() => { handleMenuChange('hoje') }} style={{ color: menuSelect === 'hoje' ? '#222222' : '#C8C8C8' }} >
             Hoje
           </p>
-          <p
-            onClick={() => { handleMenuChange('proxDias') }}
-            style={{ color: menuSelect === 'proxDias' ? '#222222' : '#C8C8C8' }}
-          >
+          <p onClick={() => { handleMenuChange('proxDias') }} style={{ color: menuSelect === 'proxDias' ? '#222222' : '#C8C8C8' }} >
             Próximos dias
           </p>
         </DashboardMenu>
+
         <DashboardHoje style={{ display: menuSelect === 'hoje' ? 'unset' : 'none' }}>
           <LocationInfo
             cityName={DataPresent.name}
             latitude={DataPresent.coord.lat}
             longitude={DataPresent.coord.lon}
           />
-          <div id='baloons'>
-            <div id='prop'>
-              <p>
-                Mínima: <br />
-              </p>
-              {handleTemperature(DataPresent.main.temp_min)}
-            </div>
-            <div id='prop'>
-              <p>
-                Máxima: <br />
-              </p>
-              {handleTemperature(DataPresent.main.temp_max)}
-            </div>
-            <div id='prop'>
-              <p>
-                Umidade: <br />
-              </p>
-              {DataPresent.main.humidity}%
-            </div>
-            <div id='prop'>
-              <p>
-                Velocidade do vento: <br />
-              </p>
-              {DataPresent.wind.speed} m/s
-            </div>
-            <h4>
-              {handleCasaquinho(DataPresent.main.temp)}
-            </h4>
-          </div>
+          <InfoHoje
+            DataPresent={DataPresent}
+            TempUnit={TempUnit}
+          />
+
         </DashboardHoje>
+
         <DashboardProx style={{ display: menuSelect === 'proxDias' ? 'unset' : 'none' }}>
           <LocationInfo
             cityName={DataPresent.name}
@@ -181,7 +142,8 @@ function App() {
             </LineChart>
           </ResponsiveContainer>
         </DashboardProx>
-        <p style={{ position: 'absolute', bottom: '20px', left: '39vw' }}>
+        
+        <p style={{ position: 'absolute', bottom: '15px', left: '39vw' }}>
           Dados fornecidos pela <a href="https://openweathermap.org/"> Open Weather API </a>
         </p>
       </Dashboard>
@@ -323,6 +285,7 @@ const DashboardHoje = styled.div`
     font-size: 2vw;
     font-style: italic;
     color: gray;
+    padding-bottom: 30px;
   }
 `
 const DashboardProx = styled.div`
