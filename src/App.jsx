@@ -6,41 +6,46 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 import { useState, useEffect } from 'react';
 import 'sweetalert2/src/sweetalert2.scss';
 import Switch from '@mui/material/Switch';
-import casaco from './assets/casaco.png';
+import Logo from './components/logdiv.jsx';
 import styled from 'styled-components';
 import lupa from './assets/lupa.png';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
+
+import LocationInfo from './components/cityInfo.jsx';
+
 function App() {
-  const [dataHoje, setDataHoje] = useState(dadosMock);
-  const [dataPrevis, setDataPrevis] = useState(forecastMock);
+  const [DataPresent, setDataPresent] = useState(dadosMock);
+  const [DataForecast, setDataForecast] = useState(forecastMock);
   const [inputBusca, setInputBusca] = useState('');
-  const [unidadeTemp, setUnidadeTemp] = useState('C')
+  const [TempUnit, setTempUnit] = useState('C')
   const [menuSelect, setMenuSelect] = useState('hoje')
 
-  const urlBuscaCidades = import.meta.env.VITE_URL_GEO;
-  const urlBuscaHoje = import.meta.env.VITE_URL_CURRENT_WEATHER;
-  const urlBuscaPrevis = import.meta.env.VITE_URL_FORECAST;
+  const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+  const urlGetCities = import.meta.env.VITE_URL_GEO;
+  const urlGetToday = import.meta.env.VITE_URL_CURRENT_WEATHER;
+  const urlGetForecast = import.meta.env.VITE_URL_FORECAST;
   const appid = import.meta.env.VITE_X_API_KEY;
 
-  const chartData = dataPrevis.list.map(item => ({
+  const chartData = DataForecast.list.map(item => ({
     dt: new Date(item.dt * 1000), // Convertendo timestamp para uma data JS
     temp: handleTemperatureChart(item.main.temp),
   }));
-  const minYValue = Math.min(...dataPrevis.list.map(item => handleTemperatureChart(item.main.temp)));
-  const maxYValue = Math.max(...dataPrevis.list.map(item => handleTemperatureChart(item.main.temp)));
+  const minYValue = Math.min(...DataForecast.list.map(item => handleTemperatureChart(item.main.temp)));
+  const maxYValue = Math.max(...DataForecast.list.map(item => handleTemperatureChart(item.main.temp)));
 
   useEffect(() => {
-    setDataHoje(dadosMock);
-    setDataPrevis(forecastMock)
+    setDataPresent(dadosMock);
+    setDataForecast(forecastMock)
   }, [])
 
   async function handleSubmit(e) {
     if (e.key === 'Enter') {
-      console.log(urlBuscaCidades, appid)
+      //console.log(urlGetCities, appid)
       try {
-        let cidades = (await axios.get(urlBuscaCidades,
+        let cities = (await axios.get(urlGetCities,
           {
             params: {
               q: inputBusca,
@@ -48,12 +53,19 @@ function App() {
               limit: 5
             }
           })).data
-        console.log(cidades)
+        if (cities.length === 0) {
+          return (
+            Swal.fire({
+              title: "Opa!",
+              text: "Parece que sua busca não retornou cidades. \n Verifique o seu input e tente novamente",
+            })
+          )
+        }
 
         const { value } = await Swal.fire({
           title: 'Estas foram as cinco primeiras cidades identificadas pela sua busca:',
           input: 'select',
-          inputOptions: Object.fromEntries(cidades.map((opcao, index) => [index, ` ${opcao.name}, ${opcao.state}, ${opcao.country}`])),
+          inputOptions: Object.fromEntries(cities.map((opcao, index) => [index, ` ${opcao.name}, ${opcao.state}, ${opcao.country}`])),
           inputPlaceholder: 'Selecione uma opção',
           showCancelButton: true,
           inputValidator: (value) => {
@@ -62,21 +74,21 @@ function App() {
             }
           },
         });
-        let cidadeEscolhida = cidades[value];
+        let cidadeEscolhida = cities[value];
         const paramentros = {
           lat: cidadeEscolhida.lat,
           lon: cidadeEscolhida.lon,
           appid
         }
-        let dadosHoje = (await axios.get(urlBuscaHoje, { params: paramentros })).data
-        let dadosPrevis = (await axios.get(urlBuscaPrevis, { params: paramentros })).data
-        setDataHoje(dadosHoje)
-        setDataPrevis(dadosPrevis)
+        let dadosHoje = (await axios.get(urlGetToday, { params: paramentros })).data
+        let dadosPrevis = (await axios.get(urlGetForecast, { params: paramentros })).data
+        setDataPresent(dadosHoje)
+        setDataForecast(dadosPrevis)
       } catch (error) {
         Swal.fire({
           title: "Opa!",
           text: "Houve um problema com a fonte de dados externa. Por favor espere um pouco e tente novamente",
-          icon: "error"
+
         });
         console.log(error)
       }
@@ -84,34 +96,33 @@ function App() {
   };
 
   function handleTemperature(temperatura) {
-    if (unidadeTemp === 'C') {
+    if (TempUnit === 'C') {
       let temperatureCelsius = (temperatura - 273.15);
       return (temperatureCelsius.toFixed(1) + " °C")
-    } else if (unidadeTemp === 'F') {
+    } else if (TempUnit === 'F') {
       let temperatureFahrenheit = (9 / 5) * (temperatura - 273.15) + 32;
       return temperatureFahrenheit.toFixed(1) + " °F";
     }
   }
 
   function handleTemperatureChart(temperatura) {
-    if (unidadeTemp === 'C') {
+    if (TempUnit === 'C') {
       let temperatureCelsius = (temperatura - 273.15);
       return (temperatureCelsius.toFixed(2))
-    } else if (unidadeTemp === 'F') {
+    } else if (TempUnit === 'F') {
       let temperatureFahrenheit = (9 / 5) * (temperatura - 273.15) + 32;
       return temperatureFahrenheit.toFixed(2);
     }
   }
 
   function handleDateShow(dataString) {
-    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     const meses = [
       'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
       'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
     ];
 
     const data = new Date(dataString);
-    const diaSemana = diasSemana[data.getDay()];
+    const diaSemana = weekDays[data.getDay()];
     const dia = data.getDate();
     const mes = meses[data.getMonth()];
     const ano = data.getFullYear();
@@ -138,10 +149,10 @@ function App() {
   }
 
   function handleChangeTempUnit() {
-    if (unidadeTemp === 'C') {
-      setUnidadeTemp('F')
+    if (TempUnit === 'C') {
+      setTempUnit('F')
     } else {
-      setUnidadeTemp('C')
+      setTempUnit('C')
     }
   }
 
@@ -151,9 +162,7 @@ function App() {
     }
     const data = new Date(timestamp * 1000);
 
-    const diasDaSemana = [
-      'Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'
-    ];
+    const diasDaSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 
     const dia = data.getDate();
     const mes = data.getMonth() + 1;
@@ -161,7 +170,6 @@ function App() {
     const diaDaSemana = diasDaSemana[data.getDay()];
 
     const dataFormatada = `${dia}/${mes}/${ano}`;
-
     const horaFormatada = `${('0' + data.getHours()).slice(-2)}:${('0' + data.getMinutes()).slice(-2)}`;
     const equivalente = `${diaDaSemana}, ${horaFormatada}`;
 
@@ -187,16 +195,7 @@ function App() {
   return (
     <Body>
       <SideMenu>
-        <LogoDiv>
-          <img
-            src={casaco}
-            alt="Logomarca 'Levo um casasquinho' TM "
-            title="Logomarca 'Levo um casasquinho' TM "
-          />
-          <p>
-            Levo um <br />casaquinho?
-          </p>
-        </LogoDiv>
+        <Logo/>
         <DivBusca>
           <img
             src={lupa}
@@ -207,6 +206,7 @@ function App() {
           <InputBusca
             placeholder="Procure por uma cidade"
             type="text"
+            autoFocus
             value={inputBusca}
             onChange={(e) => setInputBusca(e.target.value)}
             onKeyUp={handleSubmit}
@@ -216,27 +216,27 @@ function App() {
           <div>
             {/* Imagem clima */}
             <img
-              src={imagens[dataHoje.weather[0].icon]}
+              src={imagens[DataPresent.weather[0].icon]}
               alt=""
             />
-            <p style={{ color: (mapSummaryStatus(dataHoje.weather[0].main)).cor }}> {/* Temperatura */}
-              {handleTemperature(dataHoje.main.temp)}
+            <p style={{ color: (mapSummaryStatus(DataPresent.weather[0].main)).cor }}> {/* Temperatura */}
+              {handleTemperature(DataPresent.main.temp)}
             </p>
           </div>
           <h1 >
-            {mapSummaryStatus(dataHoje.weather[0].main).descricao}
+            {mapSummaryStatus(DataPresent.weather[0].main).descricao}
           </h1>
 
           <p>{/* Data: dd/mm/yy */}
-            {handleData(dataHoje.dt).data}
+            {handleData(DataPresent.dt).data}
           </p>
           <p>{/* Data: dia da semana + horário */}
-            {handleData(dataHoje.dt).equivalente}
+            {handleData(DataPresent.dt).equivalente}
           </p>
           <div id='switch' style={{ display: "flex", justifyContent: 'center' }}>
             <Switch onClick={handleChangeTempUnit} /> °F
           </div>
-          <h2>
+          <h2 style={{ position: 'fixed', bottom: '20px', left: '4vw'}}>
             Todos os direitos reservados. 2023.
           </h2>
         </DataSummary>
@@ -257,59 +257,47 @@ function App() {
           </p>
         </DashboardMenu>
         <DashboardHoje style={{ display: menuSelect === 'hoje' ? 'unset' : 'none' }}>
-          <h1>
-            {dataHoje.name}
-          </h1>
-          <div id='coords'>
-            <h3>
-              Lat: {dataHoje.coord.lat}
-            </h3>
-            <h3>
-              Long: {dataHoje.coord.lon}
-            </h3>
-          </div>
+          <LocationInfo
+            cityName={DataPresent.name}
+            latitude={DataPresent.coord.lat}
+            longitude={DataPresent.coord.lon}
+          />
           <div id='baloons'>
             <div id='prop'>
               <p>
                 Mínima: <br />
               </p>
-              {handleTemperature(dataHoje.main.temp_min)}
+              {handleTemperature(DataPresent.main.temp_min)}
             </div>
             <div id='prop'>
               <p>
                 Máxima: <br />
               </p>
-              {handleTemperature(dataHoje.main.temp_max)}
+              {handleTemperature(DataPresent.main.temp_max)}
             </div>
             <div id='prop'>
               <p>
                 Umidade: <br />
               </p>
-              {dataHoje.main.humidity}%
+              {DataPresent.main.humidity}%
             </div>
             <div id='prop'>
               <p>
                 Velocidade do vento: <br />
               </p>
-              {dataHoje.wind.speed} m/s
+              {DataPresent.wind.speed} m/s
             </div>
             <h4>
-              {handleCasaquinho(dataHoje.main.temp)}
+              {handleCasaquinho(DataPresent.main.temp)}
             </h4>
           </div>
         </DashboardHoje>
         <DashboardProx style={{ display: menuSelect === 'proxDias' ? 'unset' : 'none' }}>
-          <h1>
-            {dataHoje.name}
-          </h1>
-          <div id='coords'>
-            <h3>
-              Lat: {dataHoje.coord.lat}
-            </h3>
-            <h3>
-              Long: {dataHoje.coord.lon}
-            </h3>
-          </div>
+          <LocationInfo
+            cityName={DataPresent.name}
+            latitude={DataPresent.coord.lat}
+            longitude={DataPresent.coord.lon}
+          />
           <ResponsiveContainer width="100%" height={350}>
             <LineChart
               data={chartData}
@@ -318,9 +306,9 @@ function App() {
             >
               <XAxis
                 dataKey="dt"
-                tickFormatter={(date) => `${date.getDate()}/${date.getMonth() + 1} ${date.getHours()}h`} />
+                tickFormatter={(date) => `${date.getDate()}/${date.getMonth() + 1} (${weekDays[date.getDay()]})`} />
               <YAxis
-                tickFormatter={(temp) => `${temp}°${unidadeTemp}`}
+                tickFormatter={(temp) => `${temp}°${TempUnit}`}
                 domain={[Math.round(minYValue) - 2, Math.round(maxYValue) + 2]}
               />
               <CartesianGrid
@@ -330,7 +318,7 @@ function App() {
               <Tooltip
                 labelFormatter={(value) => `${handleDateShow(value.toDateString())}`}
                 wrapperStyle={{ backgroundColor: 'lightgray' }}
-                formatter={(temp) => `${temp}°${unidadeTemp}`}
+                formatter={(temp) => `${temp}°${TempUnit}`}
               />
               <Line type="monotone" dataKey="temp" stroke="#8884d8" />
             </LineChart>
@@ -356,6 +344,41 @@ const Body = styled.div`
   justify-content: center;
   align-items: center;
   background-color: white;
+
+  #coords {
+    padding: 10px 0px;
+    gap: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  #baloons {
+    width: 100%;
+    padding-top: 20px;
+    gap: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+  #prop {
+    width: 25vw;
+    height: 15vh;
+    border-radius: 32px;
+    padding: 5%;
+    background-color: #4D4494;
+    gap: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    font-family: 'Poppins';
+    font-size: 2vw;
+    font-weight: 700;
+    color: white;
+    p {
+      font-size: 1vw;
+    }
+  }
 
   // Utilizar em um navegador que suporte o tookit
   ::-webkit-scrollbar {
@@ -383,26 +406,7 @@ const SideMenu = styled.div`
   align-items: center;
   background-color: white;
 `
-const LogoDiv = styled.div`
-  padding: 4.2vmin;
-  height: 120px;
-  width: 100%;
-  gap: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  img {
-    width: 10vmin;
-    width: 10vmin;
-  }
-  p {
-    font-family: 'Poppins', 'sans-serif';
-    font-size: 3.6vmin;
-    font-weight: 700;
-    text-align: left;
-    color: #222222;
-  }
-`
+
 const DivBusca = styled.div`
   position: relative;
   padding: 4.2vmin;
@@ -536,40 +540,6 @@ const DashboardHoje = styled.div`
     font-style: italic;
     color: gray;
   }
-  #coords {
-    padding: 10px 0px;
-    gap: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
-  #baloons {
-    width: 100%;
-    padding-top: 20px;
-    gap: 40px;
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-  }
-  #prop {
-    width: 25vw;
-    height: 15vh;
-    border-radius: 32px;
-    padding: 5%;
-    background-color: #4D4494;
-    gap: 2px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    font-family: 'Poppins';
-    font-size: 2vw;
-    font-weight: 700;
-    color: white;
-    p {
-      font-size: 1vw;
-    }
-  }
 `
 const DashboardProx = styled.div`
   width: 100%;
@@ -587,13 +557,6 @@ const DashboardProx = styled.div`
     font-size: 2vmin;
     font-weight: 300;
     text-align: left;
-  }
-  #coords {
-    padding: 10px 0px;
-    gap: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
   }
 `
 
