@@ -86,10 +86,10 @@ function App() {
 
       <Dashboard>
         <DashboardMenu>
-          <p onClick={() => { handleMenuChange('hoje') }} style={{ color: menuSelect === 'hoje' ? '#222222' : '#C8C8C8' }} >
+          <p onClick={() => { handleMenuChange('hoje') }} style={{ color: menuSelect === 'hoje' ? '#222222' : '#C5C5C5' }} >
             Hoje
           </p>
-          <p onClick={() => { handleMenuChange('proxDias') }} style={{ color: menuSelect === 'proxDias' ? '#222222' : '#C8C8C8' }} >
+          <p onClick={() => { handleMenuChange('proxDias') }} style={{ color: menuSelect === 'proxDias' ? '#222222' : '#C5C5C5' }} >
             Próximos dias
           </p>
         </DashboardMenu>
@@ -113,7 +113,7 @@ function App() {
             latitude={DataPresent.coord.lat}
             longitude={DataPresent.coord.lon}
           />
-          <ResponsiveContainer width="98%" height={300}>
+          <ResponsiveContainer width="98%" height={300} >
             <LineChart
               data={chartData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -168,6 +168,7 @@ const Body = styled.div`
     align-items: center;
     justify-content: flex-start;
   }
+
   #baloons {
     width: 100%;
     padding-top: 20px;
@@ -234,6 +235,13 @@ const Body = styled.div`
     #disclaimer {
       bottom: 10px;
     }
+    #prop {
+      width: 40vw;
+    }
+    #baloons {
+      justify-content: center;
+      align-items: center;
+    }
   }
 `
 ////////////////// Estilos Barra Lateral //////////////////
@@ -280,6 +288,7 @@ const Dashboard = styled.div`
   @media (max-width: 1000px) {
    min-height: unset;
    width: 100%;
+   background-color: unset;
   }
 `
 const DashboardMenu = styled.div`
