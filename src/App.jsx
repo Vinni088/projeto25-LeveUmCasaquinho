@@ -79,6 +79,9 @@ function App() {
           TempUnit={TempUnit}
         />
 
+        <h9 id='rights'>
+          Todos os direitos reservados. 2023.
+        </h9>
       </SideMenu>
 
       <Dashboard>
@@ -137,9 +140,9 @@ function App() {
           </ResponsiveContainer>
         </DashboardProx>
 
-        <p style={{ position: 'absolute', bottom: '15px', left: '39vw' }}>
+        <h9 id='disclaimer'>
           Dados fornecidos pela <a href="https://openweathermap.org/"> Open Weather API </a>
-        </p>
+        </h9>
       </Dashboard>
     </Body>
   )
@@ -185,14 +188,29 @@ const Body = styled.div`
     justify-content: center;
     align-items: flex-start;
     font-family: 'Poppins';
-    font-size: 2vw;
+    font-size: 2vmax;
     font-weight: 700;
     color: white;
     p {
-      font-size: 1vw;
+      font-size: 1vmax;
     }
   }
 
+  h9 {
+    padding-top: 8.5vh;
+    font-family: 'Poppins';
+    font-size: 1.5;
+    font-weight: 400;
+    text-align: center;
+  }
+  #rights {
+    position: absolute;
+    bottom: 20px;
+  }
+  #disclaimer {
+    position: absolute;
+    bottom: 20px;
+  }
   // Utilizar em um navegador que suporte o tookit
   ::-webkit-scrollbar {
     width: 2px !important;
@@ -206,6 +224,17 @@ const Body = styled.div`
   ::-webkit-scrollbar-track {
     background-color: gray !important;
   }
+  @media (max-width: 1000px) {
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    #rights {
+    bottom: 30px;
+    }
+    #disclaimer {
+      bottom: 10px;
+    }
+  }
 `
 ////////////////// Estilos Barra Lateral //////////////////
 const SideMenu = styled.div`
@@ -218,6 +247,14 @@ const SideMenu = styled.div`
   justify-content: flex-start;
   align-items: center;
   background-color: white;
+  @media (max-width: 1000px) {
+   width: 100%;
+   min-height: unset;
+   
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+  }
 `
 ////////////////// Estilos Dashboard //////////////////
 const Dashboard = styled.div`
@@ -239,6 +276,10 @@ const Dashboard = styled.div`
       text-decoration: none;
       color: #96A7F2;
     }
+  }
+  @media (max-width: 1000px) {
+   min-height: unset;
+   width: 100%;
   }
 `
 const DashboardMenu = styled.div`
@@ -263,7 +304,7 @@ const DashboardHoje = styled.div`
   h1 {
     width: 100%;
     font-family: 'Poppins';
-    font-size: 15vmin;
+    font-size: 13.5vmin;
     font-weight: 400;
     text-align: left;
   }
@@ -288,7 +329,7 @@ const DashboardProx = styled.div`
   h1 {
     width: 100%;
     font-family: 'Poppins';
-    font-size: 15vmin;
+    font-size: 13.5vmin;
     font-weight: 400;
     text-align: left;
   }

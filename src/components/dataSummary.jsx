@@ -81,9 +81,6 @@ const DataSummary = ({ DataPresent, TempUnit, setTempUnit }) => {
                 <Switch onClick={handleChangeTempUnit} /> °F
             </div>
 
-            <h2 style={{ position: 'absolute', bottom: '15px', left: '4vw' }}>
-                Todos os direitos reservados. 2023.
-            </h2>
         </DataSummaryDiv>
     );
 };
