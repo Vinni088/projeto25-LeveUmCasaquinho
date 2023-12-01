@@ -1,15 +1,14 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import forecastMock from './assets/sampleForecast.json';
+import DataSummary from './components/dataSummary.jsx';
+import LocationInfo from './components/cityInfo.jsx';
 import dadosMock from './assets/sampleWeather.json';
+import DivSearch from './components/divBusca.jsx';
+import InfoHoje from './components/infoHoje.jsx';
 import { useState, useEffect } from 'react';
-import Switch from '@mui/material/Switch';
 import Logo from './components/logdiv.jsx';
 import styled from 'styled-components';
 
-import LocationInfo from './components/cityInfo.jsx';
-import DivSearch from './components/divBusca.jsx';
-import DataSummary from './components/dataSummary.jsx';
-import InfoHoje from './components/infoHoje.jsx';
 
 function App() {
   const [DataPresent, setDataPresent] = useState(dadosMock);
@@ -18,7 +17,6 @@ function App() {
   const [menuSelect, setMenuSelect] = useState('hoje')
 
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
 
   const chartData = DataForecast.list.map(item => ({
     dt: new Date(item.dt * 1000), // Convertendo timestamp para uma data JS
@@ -31,8 +29,6 @@ function App() {
     setDataPresent(dadosMock);
     setDataForecast(forecastMock)
   }, [])
-
-
 
   function handleTemperatureChart(temperatura) {
     if (TempUnit === 'C') {
@@ -59,7 +55,6 @@ function App() {
     return `${diaSemana}, ${dia} ${mes} ${ano}`;
   }
 
-
   function handleMenuChange(string) {
     if (menuSelect !== string) {
       setMenuSelect(string)
@@ -67,7 +62,6 @@ function App() {
     }
 
   }
-
 
   return (
     <Body>
@@ -116,7 +110,7 @@ function App() {
             latitude={DataPresent.coord.lat}
             longitude={DataPresent.coord.lon}
           />
-          <ResponsiveContainer width="100%" height={350}>
+          <ResponsiveContainer width="98%" height={300}>
             <LineChart
               data={chartData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -142,7 +136,7 @@ function App() {
             </LineChart>
           </ResponsiveContainer>
         </DashboardProx>
-        
+
         <p style={{ position: 'absolute', bottom: '15px', left: '39vw' }}>
           Dados fornecidos pela <a href="https://openweathermap.org/"> Open Weather API </a>
         </p>
@@ -158,12 +152,12 @@ const Body = styled.div`
   }
   position: relative;
   min-height: 100vh;
-  min-width: 100vw;
+  width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: white;
-
+  overflow: hidden;
   #coords {
     padding: 10px 0px;
     gap: 30px;
@@ -225,7 +219,6 @@ const SideMenu = styled.div`
   align-items: center;
   background-color: white;
 `
-
 ////////////////// Estilos Dashboard //////////////////
 const Dashboard = styled.div`
   background-color: #D8D8D8;

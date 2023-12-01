@@ -13,59 +13,81 @@ const DivSearch = ({ setDataPresent, setDataForecast }) => {
 
   const [inputBusca, setInputBusca] = useState('');
 
+  let paramsGetCities = {
+    q: inputBusca,
+    appid,
+    limit: 5
+  }
+
+  async function chooseCity(cities) {
+    const { value } = await Swal.fire({
+      title: 'Estas foram as primeiras cidades identificadas pela sua busca:',
+      input: 'select',
+      inputOptions: Object.fromEntries(cities.map((opcao, index) => [index, ` ${opcao.name}, ${opcao.state}, ${opcao.country}`])),
+      inputPlaceholder: 'Selecione uma opção',
+      showCancelButton: true,
+      inputValidator: (value) => { if (!value) { return 'Por favor, selecione uma opção' } }
+    });
+    return value
+  }
+
+  async function updateData(cidadeEscolhida) {
+    try {
+      const paramentros = {
+        lat: cidadeEscolhida.lat,
+        lon: cidadeEscolhida.lon,
+        appid
+      }
+      let dadosHoje = (await axios.get(urlGetToday, { params: paramentros })).data
+      let dadosPrevis = (await axios.get(urlGetForecast, { params: paramentros })).data
+      setDataPresent(dadosHoje)
+      setDataForecast(dadosPrevis)
+    } catch (error) {
+      Swal.fire({
+        title: "Opa!",
+        text: "Houve um problema com a fonte de dados externa. Por favor espere um pouco e tente novamente"
+      });
+      console.log(error)
+    }
+  }
+
+  async function AlertNoCities() {
+    return (Swal.fire({
+      title: "Opa!",
+      text: "Parece que sua busca não retornou cidades. \n Verifique o seu input e tente novamente",
+    }))
+  }
+
+  async function AlertNoCities() {
+    return (Swal.fire({
+      title: "Opa!",
+      text: "Parece que sua busca não retornou cidades. \n Verifique o seu input e tente novamente"
+    }))
+  }
+  
+  async function AlertExternalError() {
+    return (Swal.fire({
+      title: "Opa!",
+      text: "Houve um problema com os dados externos. Tente novamente mais tarde."
+    }))
+  }
+
   async function handleSubmit(e) {
     if (e.key === 'Enter') {
-      //console.log(urlGetCities, appid)
       try {
-        let cities = (await axios.get(urlGetCities,
-          {
-            params: {
-              q: inputBusca,
-              appid,
-              limit: 5
-            }
-          })).data
-        if (cities.length === 0) {
-          return (
-            Swal.fire({
-              title: "Opa!",
-              text: "Parece que sua busca não retornou cidades. \n Verifique o seu input e tente novamente",
-            })
-          )
-        }
+        let cities = (await axios.get(urlGetCities, { params: paramsGetCities })).data
+        if (cities.length === 0) { return AlertNoCities() }
 
-        const { value } = await Swal.fire({
-          title: 'Estas foram as cinco primeiras cidades identificadas pela sua busca:',
-          input: 'select',
-          inputOptions: Object.fromEntries(cities.map((opcao, index) => [index, ` ${opcao.name}, ${opcao.state}, ${opcao.country}`])),
-          inputPlaceholder: 'Selecione uma opção',
-          showCancelButton: true,
-          inputValidator: (value) => {
-            if (!value) {
-              return 'Por favor, selecione uma opção';
-            }
-          },
-        });
-        let cidadeEscolhida = cities[value];
-        const paramentros = {
-          lat: cidadeEscolhida.lat,
-          lon: cidadeEscolhida.lon,
-          appid
-        }
-        let dadosHoje = (await axios.get(urlGetToday, { params: paramentros })).data
-        let dadosPrevis = (await axios.get(urlGetForecast, { params: paramentros })).data
-        setDataPresent(dadosHoje)
-        setDataForecast(dadosPrevis)
+        const value = await chooseCity(cities);
+
+        await updateData(cities[value]);
       } catch (error) {
-        Swal.fire({
-          title: "Opa!",
-          text: "Houve um problema com a fonte de dados externa. Por favor espere um pouco e tente novamente",
-
-        });
+        await AlertExternalError();
         console.log(error)
       }
     }
   };
+
   return (
     <DivBusca>
       <img

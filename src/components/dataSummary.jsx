@@ -70,12 +70,17 @@ const DataSummary = ({ DataPresent, TempUnit, setTempUnit }) => {
                     {handleTemperature(DataPresent.main.temp)}
                 </p>
             </div>
+
             <h1>{mapSummaryStatus(DataPresent.weather[0].main).descricao}</h1>
+
             <p>{handleData(DataPresent.dt).data}</p>
+
             <p>{handleData(DataPresent.dt).equivalente}</p>
+
             <div id="switch" style={{ display: "flex", justifyContent: 'center' }}>
                 <Switch onClick={handleChangeTempUnit} /> °F
             </div>
+
             <h2 style={{ position: 'absolute', bottom: '15px', left: '4vw' }}>
                 Todos os direitos reservados. 2023.
             </h2>
