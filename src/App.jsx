@@ -46,13 +46,15 @@ function App() {
       'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
     ];
 
-    const data = new Date(dataString);
+    const data = dataString;
     const diaSemana = weekDays[data.getDay()];
     const dia = data.getDate();
-    const mes = meses[data.getMonth()];
+    const mes = data.getMonth();
     const ano = data.getFullYear();
+    const hora = data.getHours();
+    const minutos = data.getMinutes();
 
-    return `${diaSemana}, ${dia} ${mes} ${ano}`;
+    return `${hora}h, ${diaSemana} ${dia}/${mes}/${ano}`;
   }
 
   function handleMenuChange(string) {
@@ -121,7 +123,8 @@ function App() {
             >
               <XAxis
                 dataKey="dt"
-                tickFormatter={(date) => `${date.getDate()}/${date.getMonth() + 1} (${weekDays[date.getDay()]})`} />
+                fontSize={"2vmin"}
+                tickFormatter={(date) => `${date.getHours()}h ${date.getDate()}/${date.getMonth() + 1}`} />
               <YAxis
                 tickFormatter={(temp) => `${temp}°${TempUnit}`}
                 domain={[Math.round(minYValue) - 2, Math.round(maxYValue) + 2]}
@@ -131,7 +134,7 @@ function App() {
                 strokeDasharray="5 5"
               />
               <Tooltip
-                labelFormatter={(value) => `${handleDateShow(value.toDateString())}`}
+                labelFormatter={(value) => `${handleDateShow(value)}`}
                 wrapperStyle={{ backgroundColor: 'lightgray' }}
                 formatter={(temp) => `${temp}°${TempUnit}`}
               />
